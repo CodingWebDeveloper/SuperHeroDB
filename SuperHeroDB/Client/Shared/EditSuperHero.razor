@@ -1,0 +1,67 @@
+﻿
+@inject ISuperHeroService SuperHeroService
+@inject IJSRuntime JSRuntime
+
+@if (Hero.Id == 0)
+ {
+    <h3>Create a new Hero</h3>
+ }
+ else
+ {
+    <h3>Edit '@this.Hero.HeroName'</h3>
+ }
+<EditForm Model="Hero" OnValidSubmit="HandleSubmit">
+    <div class="form-group">
+        <label>FirtsName</label>
+        <InputText @bind-Value="this.Hero.FirstName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>LastName</label>
+        <InputText @bind-Value="this.Hero.LastName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>HeroName</label>
+        <InputText @bind-Value="this.Hero.HeroName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Comic</label><br>
+        <InputRadioGroup @bind-Value="this.comicId" class="form-control">
+            @foreach (var comic in this.SuperHeroService.Comics)
+            {
+                <InputRadio Value="@comic.Id" /><span style="padding-left: 5px;">@comic.Name</span><br />
+            }
+        </InputRadioGroup>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+@code {
+
+    [Parameter]
+    public SuperHeroDB.Shared.SuperHero heroToEdit { get; set; }
+
+    [Parameter]
+    public SuperHeroDB.Shared.SuperHero Hero { get; set; } = new SuperHeroDB.Shared.SuperHero();
+
+    int comicId = 1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await this.SuperHeroService.GetComics();
+        this.comicId = Hero.Comic.Id;
+    }
+
+    async void HandleSubmit()
+    {
+        this.Hero.Comic = this.SuperHeroService.Comics.FirstOrDefault(c => c.Id == this.comicId);
+
+        await JSRuntime.InvokeVoidAsync("console.log", this.Hero);
+        if (this.Hero.Id == 0)
+        {
+            await SuperHeroService.CreateSuperHero(this.Hero);
+        }
+        else
+        {
+            await this.SuperHeroService.UpdateSuperHero(this.Hero, this.Hero.Id);
+        }
+    }
+}

@@ -1,0 +1,78 @@
+﻿@page "/superheroes"
+@inject ISuperHeroService SuperHeroService
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<h3>SuperHeroes</h3>
+
+@if (this.SuperHeroService.Heroes.Count == 0)
+{
+    <span>Loading Super Heroes</span>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Hero Name</th>
+                <th>Comic</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var hero in this.SuperHeroService.Heroes)
+            {
+            <tr>
+                <td>@hero.FirstName</td>
+                <td>@hero.LastName</td>
+                <td>@hero.HeroName</td>
+                <td>@hero.Comic.Name</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => ShowHero(hero.Id)">Show</button>
+                </td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => EditHero(hero.Id)">Edit</button>
+                </td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => DeleteHero(hero.Id)">Delete Hero</button>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<EditSuperHero Hero="this.heroToEdit"></EditSuperHero>
+
+@code {
+
+    SuperHeroDB.Shared.SuperHero heroToEdit =new SuperHeroDB.Shared.SuperHero();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await this.SuperHeroService.GetSuperHeroes();
+        this.SuperHeroService.OnChange += StateHasChanged;
+    }
+
+    void ShowHero(int id)
+    {
+        this.NavigationManager.NavigateTo($"superhero/{id}");
+    }
+
+    void EditHero(int id)
+    {
+        this.heroToEdit = this.SuperHeroService.Heroes.Find(h => h.Id == id);
+    }
+
+    void DeleteHero(int id)
+    {
+        this.SuperHeroService.DeleteSuperHero(id);
+    }
+
+    public void Dispose()
+    {
+        this.SuperHeroService.OnChange -= StateHasChanged;
+    }
+}

@@ -1,0 +1,27 @@
+﻿@page "/superhero/{id:int}"
+@inject ISuperHeroService SuperHeroService
+<h3>SuperHero</h3>
+
+@if (this.hero == null)
+{
+    <span>Hero is loading...</span>
+}
+else
+{
+    <h1>This is @this.hero.HeroName, also called @this.hero.FirstName @this.hero.LastName.</h1>
+    <span>This hero belongs to @this.hero.Comic.Name</span>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    SuperHeroDB.Shared.SuperHero hero = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.hero = await this.SuperHeroService.GetSuperHero(Id);
+    }
+
+
+}
